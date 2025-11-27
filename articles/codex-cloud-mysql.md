@@ -43,6 +43,10 @@ https://community.openai.com/t/codex-docker-in-docker-in-environment-setup
 Codex CloudにはデフォルトでGoのランタイムがありますが、MySQLは入っていません。
 そのため、テスト用のデータベースが立ち上げられず、APIの結合テストを実行することができません。
 
+↓タスク実行結果。`go test ./...`がデータベースに接続できずに失敗しています。
+
+![Codex CloudがAPIの結合テストを実行できていない](https://storage.googleapis.com/zenn-user-upload/358981246fbf-20251127.png)
+
 テストの修正・追加の必要があるタスクを投げた場合、テストが実行できないため、テストが失敗する状態でプルリクエストが作られます。
 適宜、ローカルの開発環境でテストを実行して、人の手で修正する必要がありました。
 
@@ -54,6 +58,10 @@ Codex CloudにはデフォルトでGoのランタイムがありますが、MySQ
 そこで、Codex Cloud環境にMySQLを導入すると、APIの結合テストが実行できるようになりました。
 タスクを投げると、そのままレビューできる段階のプルリクエストが完成します。
 雑多なバグ修正や煩雑な仕様変更のタスクはとりあえず投げておくという使い方ができます。
+
+↓導入後のタスク実行結果。`make test-light`が成功しています。（※APIの結合テストにはオブジェクトストレージサーバのMinIOに接続するテストもあるため、そのテストを除外したコマンドが`make test-light`です。）
+
+![Codex CloudがAPIの結合テストを実行できている](https://storage.googleapis.com/zenn-user-upload/17ec3ad1361a-20251127.png)
 
 ↓APIのCI/CDがすべて通っています。気持ちいいですね。
 

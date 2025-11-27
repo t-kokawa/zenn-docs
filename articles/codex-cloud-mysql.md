@@ -4,6 +4,7 @@ emoji: "🚅"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Codex", "AI駆動開発", "AIエージェント", "AI", "開発生産性"]
 published: true
+publication_name: "digeon"
 ---
 私は株式会社Digeonでインターンをしている大学生です。
 

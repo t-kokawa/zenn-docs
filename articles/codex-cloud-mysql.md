@@ -15,7 +15,7 @@ MySQL導入前は、投げたタスクでAPIの結合テストが回らず、ロ
 
 ↓オールグリーン！
 
-![APIのCI/CDがすべて通っている](https://storage.googleapis.com/zenn-user-upload/52ca46952d41-20251126.png)
+![APIのCI/CDがすべて通っている](https://storage.googleapis.com/zenn-user-upload/970944708a58-20251127.png)
 
 # Codex Cloudとは
 
@@ -24,7 +24,7 @@ Codex Cloudは、OpenAIのAIコーディングエージェントCodexをWeb上�
 GitHubと連携しており、プルリクエストを作るところまでやってくれます。
 諸々の作業がGUIで完結したり、並行でタスクを投げられたりするのも便利です。
 
-![Codex Cloudのトップ画面](https://storage.googleapis.com/zenn-user-upload/245c8fc2a3ca-20251126.png)
+![Codex Cloudのトップ画面](https://storage.googleapis.com/zenn-user-upload/2fc82ef8d00b-20251127.png)
 
 Codex Cloudではタスク実行用の環境をセットアップスクリプトでカスタマイズできます。
 セットアップスクリプト実行後の状態をキャッシュする機能もあり、実行時間も気になりません。
@@ -53,7 +53,7 @@ Codex CloudにはデフォルトでGoのランタイムがありますが、MySQ
 
 ↓このように、APIのCI/CDではテストの実行ワークフローだけ落ちることがしばしばでした。
 
-![APIのCI/CDでテストだけが落ちている](https://storage.googleapis.com/zenn-user-upload/3a8ad3c53eeb-20251126.png)
+![APIのCI/CDでテストだけが落ちている](https://storage.googleapis.com/zenn-user-upload/c81aa705b7fe-20251127.png)
 
 # MySQLを導入
 そこで、Codex Cloud環境にMySQLを導入すると、APIの結合テストが実行できるようになりました。
@@ -66,7 +66,7 @@ Codex CloudにはデフォルトでGoのランタイムがありますが、MySQ
 
 ↓APIのCI/CDがすべて通っています。気持ちいいですね。
 
-![APIのCI/CDがすべて通っている](https://storage.googleapis.com/zenn-user-upload/52ca46952d41-20251126.png)
+![APIのCI/CDがすべて通っている](https://storage.googleapis.com/zenn-user-upload/970944708a58-20251127.png)
 
 # 技術的な話
 

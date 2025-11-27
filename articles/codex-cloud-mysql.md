@@ -15,7 +15,7 @@ MySQL導入前は、投げたタスクでAPIの結合テストが回らず、ロ
 
 ↓オールグリーン！
 
-![APIのCI/CDがすべて通っている](https://storage.googleapis.com/zenn-user-upload/970944708a58-20251127.png)
+![APIのCI/CDがすべて通っている](https://storage.googleapis.com/zenn-user-upload/970944708a58-20251127.png =600x)
 
 # Codex Cloudとは
 
@@ -24,7 +24,7 @@ Codex Cloudは、OpenAIのAIコーディングエージェントCodexをWeb上�
 GitHubと連携しており、プルリクエストを作るところまでやってくれます。
 諸々の作業がGUIで完結したり、並行でタスクを投げられたりするのも便利です。
 
-![Codex Cloudのトップ画面](https://storage.googleapis.com/zenn-user-upload/2fc82ef8d00b-20251127.png)
+![Codex Cloudのトップ画面](https://storage.googleapis.com/zenn-user-upload/2fc82ef8d00b-20251127.png =600x)
 
 Codex Cloudではタスク実行用の環境をセットアップスクリプトでカスタマイズできます。
 セットアップスクリプト実行後の状態をキャッシュする機能もあり、実行時間も気になりません。
@@ -46,14 +46,14 @@ Codex CloudにはデフォルトでGoのランタイムがありますが、MySQ
 
 ↓タスク実行結果。`go test ./...`がデータベースに接続できずに失敗しています。
 
-![Codex CloudがAPIの結合テストを実行できていない](https://storage.googleapis.com/zenn-user-upload/358981246fbf-20251127.png)
+![Codex CloudがAPIの結合テストを実行できていない](https://storage.googleapis.com/zenn-user-upload/358981246fbf-20251127.png =600x)
 
 テストの修正・追加の必要があるタスクを投げた場合、テストが実行できないため、テストが失敗する状態でプルリクエストが作られます。
 適宜、ローカルの開発環境でテストを実行して、人の手で修正する必要がありました。
 
 ↓このように、APIのCI/CDではテストの実行ワークフローだけ落ちることがしばしばでした。
 
-![APIのCI/CDでテストだけが落ちている](https://storage.googleapis.com/zenn-user-upload/c81aa705b7fe-20251127.png)
+![APIのCI/CDでテストだけが落ちている](https://storage.googleapis.com/zenn-user-upload/c81aa705b7fe-20251127.png =600x)
 
 # MySQLを導入
 そこで、Codex Cloud環境にMySQLを導入すると、APIの結合テストが実行できるようになりました。
@@ -62,11 +62,11 @@ Codex CloudにはデフォルトでGoのランタイムがありますが、MySQ
 
 ↓導入後のタスク実行結果。`make test-light`が成功しています。（※APIの結合テストには外部のオブジェクトストレージサーバに接続するテストもあるため、そのテストを除外したコマンドが`make test-light`です。）
 
-![Codex CloudがAPIの結合テストを実行できている](https://storage.googleapis.com/zenn-user-upload/17ec3ad1361a-20251127.png)
+![Codex CloudがAPIの結合テストを実行できている](https://storage.googleapis.com/zenn-user-upload/17ec3ad1361a-20251127.png =600x)
 
 ↓APIのCI/CDがすべて通っています。気持ちいいですね。
 
-![APIのCI/CDがすべて通っている](https://storage.googleapis.com/zenn-user-upload/970944708a58-20251127.png)
+![APIのCI/CDがすべて通っている](https://storage.googleapis.com/zenn-user-upload/970944708a58-20251127.png =600x)
 
 # 技術的な話
 

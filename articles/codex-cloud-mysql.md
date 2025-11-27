@@ -3,7 +3,7 @@ title: "Codex Cloud環境にMySQL導入→APIの結合テストが実行可能�
 emoji: "🚅"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Codex", "AI駆動開発", "AIエージェント", "AI", "開発生産性"]
-published: false
+published: true
 ---
 私は株式会社Digeonでインターンをしている大学生です。
 

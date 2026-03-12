@@ -19,6 +19,6 @@
   },
   "homepage": "https://github.com/t-kokawa/zenn-docs#readme",
   "dependencies": {
-    "zenn-cli": "^0.2.10"
+    "zenn-cli": "^0.4.6"
   }
 }

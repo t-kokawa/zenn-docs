@@ -1,5 +1,5 @@
 ---
-title: "Codex CLIの完了通知をWindowsの通知センター等に送る"
+title: "Codex CLIの完了通知をWindowsの通知センターやntfyに送る"
 emoji: "🔔"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Codex", "AI駆動開発", "AIエージェント", "AI", "開発生産性"]
@@ -10,6 +10,8 @@ published: false
 この記事では、WSLで動かしているCodex CLIの作業完了を、Windowsの通知センターにトースト通知で届ける方法を書きます。
 
 あわせて、スマホにも通知できるように `ntfy` をつなぐ方法も載せます。
+
+↓実際に通知が来ている様子。頼もしいです。
 
 ![トースト通知](https://storage.googleapis.com/zenn-user-upload/0459d907a48f-20260312.png)
 

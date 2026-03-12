@@ -1,5 +1,5 @@
 ---
-title: "Codex CLIの完了通知をWindowsの通知センターに送る"
+title: "Codex CLIの完了通知をWindowsの通知センター等に送る"
 emoji: "🔔"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Codex", "AI駆動開発", "AIエージェント", "AI", "開発生産性"]
@@ -7,50 +7,87 @@ published: false
 ---
 私は株式会社Digeonでインターンをしている大学生です。
 
-この記事は、Codex CLIの完了通知をWindowsの通知センターに送るようにした事について書いています。
+この記事では、WSLで動かしているCodex CLIの作業完了を、Windowsの通知センターにトースト通知で届ける方法を書きます。
 
-# 前提
+あわせて、スマホにも通知できるように `ntfy` をつなぐ方法も載せます。
 
-WSLでCodex CLIを使用しています。
+![トースト通知](https://storage.googleapis.com/zenn-user-upload/0459d907a48f-20260312.png)
 
-Windows側ではトースト通知のためにPowerShellから`BurntToast`モジュールを使えるようにしてあります。
+# やること
 
-また、通知スクリプト内では`jq`や`curl`などのコマンドを使用しています。
+1. Codex CLI の `notify` 機能で、タスク完了時に任意のスクリプトを呼ぶ
+2. WSL 上のシェルスクリプトから Windows 側の PowerShell を呼ぶ
+3. Windows の通知センターにトースト通知を出す / `ntfy` に送る
+
+通知スクリプトは Bash で書きます。`ntfy` にも送るようにすることで、席を離れているときでも気づきやすくなります。
+
+# 必要環境
+
+この記事の構成は以下の環境を前提にしています。
+
+- Codex CLI を WSL 上で使っている
+- WSL 側で `bash` `jq` `curl` `iconv` `base64` を使える
+- Windows 側で PowerShell から `BurntToast` モジュールを利用できる
+
+Windows 側の通知だけ使うなら、最低限必要なのは `BurntToast` です。
 
 # 課題：Codex CLIの作業完了に気づかない
 
-Codex CLIは、タスクの実行が完了すると、ターミナルに完了のメッセージを表示します。
+Codex CLI はタスクの実行が完了すると、ターミナルに完了メッセージを表示します。
 
-しかし、ターミナルを見ていないと、完了のメッセージに気づかないことがあります。
+ただ、別の作業をしていたり、ブラウザやエディタを見ていたりすると、その表示に気づかないことがあります。
 
-タスクの実行が完了しているのに、ターミナルを見ていないために、次のタスクを投げるのが遅れてしまうと、作業効率が下がってしまいます。
+完了に気づくのが遅れると、次の指示を投げるまでの待ち時間が積み重なって、思ったよりテンポが落ちます。
 
-# 解決策：notify機能
+# 解決策：notify機能でWindows通知を出す
 
-Codex CLIには、タスクの完了をフックにして、任意のコマンドを実行できるnotify機能があります。
+Codex CLI には、タスク完了をフックにして任意のコマンドを実行できる `notify` 機能があります。
 
-`~/.codex/config.toml`に以下のように設定すると、
+`~/.codex/config.toml` に以下のように設定すると、タスクの完了時に `main.sh` が実行されます。
 
 ```toml
 notify = [
   "bash",
-  "/home/t-kokawa/.codex/my_notify/main.sh"
+  "/home/your-user/.codex/my_notify/main.sh"
 ]
 ```
 
-タスクの完了時に`main.sh`が実行されるようになります。
+`/home/your-user/` の部分は、自分の WSL 上のホームディレクトリに置き換えてください。
 
-`main.sh`に通知を送る処理を書いておくと、タスクの完了を通知することができます。
+この `main.sh` の中で Windows 側へ通知を飛ばせば、Codex CLI の完了を Windows の通知センターで拾えるようになります。
+
+# notifyで渡される入力
+
+`notify` で実行されるコマンドには Codex CLI から JSON 文字列が引数で渡されます。
+
+たとえば、この記事で使っているスクリプトでは次のような値を参照しています。
+
+```json
+{
+  "type": "agent-turn-complete",
+  "cwd": "/home/your-user/work/example-project",
+  "last-assistant-message": "実装とテストが終わりました。変更点を確認してください。"
+}
+```
+
+このうち、最低限見ているのは以下の3つです。
+
+- `type`: どのタイミングの通知かを判定するために使う
+- `cwd`: どのディレクトリで動いていたかを通知タイトルに入れるために使う
+- `last-assistant-message`: 通知本文に出すメッセージとして使う
 
 # 通知スクリプト
 
-`main.sh`は、Codex CLIから渡されたJSON形式の引数をパースして、Windowsの通知センターに通知を送るスクリプトです。
+`main.sh` は、Codex CLI から渡された JSON をパースし、Windows の通知センターにトースト通知を送るスクリプトです。
 
-WSL上で動くシェルスクリプトからWindows側のPowerShellを呼び出して、Windowsの通知センターにトースト通知を送っています。
+流れは次の通りです。
 
-また、ntfyを使用して、スマホにも通知を送るようにしています。
+1. 引数として渡された JSON を読む
+2. `type` や `last-assistant-message` を取り出す
+3. WSL から Windows の `powershell.exe` を呼ぶ
+4. `BurntToast` で Windows の通知センターにトースト通知を出す / `ntfy` に送る
 
-ただし、ntfyに送った通知内容は外部サービスを経由します。公開トピックを使う場合は、通知本文に機密情報や詳細な作業内容を含めすぎないよう注意してください。
+ただし、`ntfy` は外部サービスを経由するため、後述の注意点を読んだうえで有効化してください。
 
 ## main.sh
 
@@ -58,7 +95,7 @@ WSL上で動くシェルスクリプトからWindows側のPowerShellを呼び出
 #!/usr/bin/env bash
 set -euo pipefail
 
-DIR="/home/t-kokawa/.codex/my_notify"
+DIR="/home/your-user/.codex/my_notify"
 
 CONFIG="$DIR/config.sh"
 if [[ -f "$CONFIG" ]]; then
@@ -137,6 +174,8 @@ fi
 exit 0
 ```
 
+`DIR` は自分の環境に合わせて変更してください。
+
 ## config.sh
 
 ```sh
@@ -147,31 +186,43 @@ ENABLE_WINDOWS_TOAST=1
 ENABLE_NTFY=1
 
 # ===== ntfy settings =====
-NTFY_URL="https://ntfy.sh/codex-notify-kokawa"
+NTFY_URL="https://ntfy.sh/your-private-topic"
 
 # ===== Other settings =====
 MAX_BODY_LENGTH=240
 ```
 
+`ENABLE_NTFY=0` のままなら、Windows 通知だけが有効です。まずはこの状態で動かすのが分かりやすいと思います。
+
+`NTFY_URL` を設定する場合は、自分専用のトピック名に置き換えてください。記事中のようなサンプル値をそのまま使わない方が安全です。
+
+# ntfyを使うときの注意点
+
+`ntfy` は便利ですが、Windows の通知センターに閉じておらず、通知内容が外部サービスを通る構成になります。
+
+特に公開トピックを使う場合は、次の点に注意した方がよいです。
+
+- 通知本文に機密情報や顧客名、具体的な作業内容を入れすぎない
+- 推測されやすいトピック名を避ける
+- 必要なければ `ENABLE_NTFY=0` のままにする
+
 # 開発用スクリプト
 
-通知スクリプトの開発を効率的に行えるようにするスクリプトを作成して、開発を進めました。
+通知スクリプトの開発を楽にするために、入力確認用と動作確認用の補助スクリプトも用意しました。
 
-以下の`sample.sh`と`mock.sh`は、notifyに渡される入力を確認したり、通知スクリプトの動作確認をしたりするための補助スクリプトです。通知を使うだけであれば必須ではありませんが、開発中の試行錯誤がかなり楽になります。
+`notify` にどんな JSON が渡ってくるのかを確認したり、通知処理だけを繰り返し試したりできるので、試行錯誤がかなり楽になります。
 
 ## sample.sh
 
-`sample.sh`は、Codex CLIから渡されるJSON形式の引数のサンプルを`sample.log`に出力するスクリプトです。
+`sample.sh` は、Codex CLI から渡される引数や環境変数を `sample.log` に記録するスクリプトです。
 
-サンプル取得時は`~/.codex/config.toml`のnotifyの設定を`sample.sh`が呼び出されるように変更します。
-
-そうすることで、タスクの実行が完了するたびに、JSON形式の引数のサンプルが`sample.log`に出力されるようになります。
+サンプル取得時は `~/.codex/config.toml` の `notify` を一時的に `sample.sh` に差し替えます。そうすると、タスク完了のたびに notify の入力内容を確認できます。
 
 ```sh
 #!/usr/bin/env bash
 set -u
 
-DIR="/home/t-kokawa/.codex/my_notify"
+DIR="/home/your-user/.codex/my_notify"
 LOG="$DIR/sample.log"
 mkdir -p "$DIR"
 
@@ -198,13 +249,13 @@ exit 0
 
 ## mock.sh
 
-`mock.sh`は、`sample.log`に出力されたJSON形式の引数のうち最新のものを`main.sh`に渡して、通知スクリプトの動作をテストするスクリプトです。
+`mock.sh` は、`sample.log` に保存した最新の引数を取り出して `main.sh` に渡し、通知スクリプトだけを単体でテストするためのスクリプトです。
 
 ```sh
 #!/usr/bin/env bash
 set -euo pipefail
 
-DIR="/home/t-kokawa/.codex/my_notify"
+DIR="/home/your-user/.codex/my_notify"
 LOG="$DIR/sample.log"
 NOTIFY="$DIR/main.sh"
 
@@ -243,6 +294,8 @@ exec "$NOTIFY" "$raw"
 
 # おわりに
 
-これで、効率的にCodex CLIをまわすことができるようになりました。
+Codex CLI の `notify` を使うと、WSL で動かしていても Windows の通知センターに自然につなげられます。
 
-みなさんも、Codex CLIのnotify機能を使って、タスクの完了を通知してみてはいかがでしょうか。
+これで、作業完了に気づくまでの無駄な待ち時間がかなり減りました。
+
+みなさんもぜひ試してみてください。

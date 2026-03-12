@@ -1,5 +1,5 @@
 ---
-title: "Codex CLIの完了通知をWindowsの通知センターやntfyに送る"
+title: "Codex CLIの完了通知をWSLからWindowsの通知センターやntfyに送る"
 emoji: "🔔"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Codex", "AI駆動開発", "AIエージェント", "AI", "開発生産性"]
@@ -7,19 +7,18 @@ published: false
 ---
 私は株式会社Digeonでインターンをしている大学生です。
 
-この記事では、WSLで動かしているCodex CLIの作業完了を、Windowsの通知センターにトースト通知で届ける方法や、スマホにも通知できるように`ntfy`をつなぐ方法を載せます。
+Codex CLIを動かしていると、タスク完了に気づかず待ち時間が発生することがあります。
+
+この記事では、Codex CLIの`notify`フックを使って
+
+- Windowsの通知センターにトースト通知を出す
+- `ntfy`経由でスマホにも通知する
+
+仕組みを作る方法を紹介します。
 
 ↓実際に通知が来ている様子。頼もしいです。
 
 ![トースト通知](https://storage.googleapis.com/zenn-user-upload/3e0fe871ff23-20260312.png)
-
-# やること
-
-1. Codex CLIの`notify`フックで、タスク完了時に任意のスクリプトを呼ぶ
-2. WSL上のシェルスクリプトからWindows側のPowerShellを呼ぶ
-3. Windowsの通知センターにトースト通知を出す / `ntfy`に送る
-
-通知スクリプトはBashで書きます。
 
 # 必要環境
 
@@ -29,7 +28,9 @@ published: false
 - WSL側で`bash` `jq` `curl` `iconv` `base64`を使える
 - Windows側でPowerShellから`BurntToast`モジュールを利用できる
 
-# 課題：Codex CLIの作業完了に気づかない
+# 背景：Codex CLIの作業完了に気づかない
+
+Codex CLIは、OpenAIのCodexをターミナルから操作できるCLIツールで、エージェントに実装・修正・テストなどのタスクを依頼できます。
 
 Codex CLIはタスクの実行が完了すると、ターミナルに完了メッセージを表示します。
 
@@ -55,6 +56,14 @@ notify = [
 この`main.sh`の中でWindows側へ通知を飛ばせば、Codex CLIの完了をWindowsの通知センターで拾えるようになります。
 
 `ntfy`にも送るようにすることで、席を離れているときでも気づきやすくなります。
+
+# やること
+
+1. Codex CLIの`notify`フックで、タスク完了時に任意のスクリプトを呼ぶ
+2. WSL上のシェルスクリプトからWindows側のPowerShellを呼ぶ
+3. Windowsの通知センターにトースト通知を出す / `ntfy`に送る
+
+通知スクリプトはBashで書きます。
 
 # notifyフックで渡される入力
 
@@ -89,7 +98,7 @@ notify = [
 
 ## main.sh
 
-```sh
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -176,7 +185,7 @@ exit 0
 
 ## config.sh
 
-```sh
+```bash
 #!/usr/bin/env bash
 
 # ===== Channel switches =====
@@ -214,7 +223,7 @@ MAX_BODY_LENGTH=240
 
 サンプル取得時は`~/.codex/config.toml`の`notify`を一時的に`sample.sh`に差し替えます。そうすると、タスク完了のたびにnotifyフックの入力内容を確認できます。
 
-```sh
+```bash
 #!/usr/bin/env bash
 set -u
 
@@ -247,7 +256,7 @@ exit 0
 
 `mock.sh`は、`sample.log`に保存した最新の引数を取り出して`main.sh`に渡し、通知スクリプトだけを単体でテストするためのスクリプトです。
 
-```sh
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
